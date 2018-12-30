@@ -1,0 +1,21 @@
+{
+  "name": "serverunity",
+  "version": "1.0.0",
+  "description": "Server for MMO whit unity ",
+  "main": "index.js",
+  "dependencies": {
+    "express": "*",
+    "shortid": "*",
+    "socket.io": "*"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node index.js",
+    "test": "node index.js"
+  },
+  "engines":{
+    "node": "10.10.x"
+  },
+  "author": "Leonel Agustin Alcazar",
+  "license": "ISC"
+}
