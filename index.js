@@ -6,12 +6,24 @@ var Players = [];
 
 var Cars = [
 	{
-		"id":"0",
 		"driver":"none",
 		"inUse":"false",
 		"x":"4,00",
 		"y":"0,5",
 		"z":"0",
+		"rx":"0",
+		"ry":"0",
+		"rz":"0",
+	}
+];
+
+var Ships = [
+	{
+		"driver":"none",
+		"inUse":"false",
+		"x":"-16,1",
+		"y":"6,9",
+		"z":"-30",
 		"rx":"0",
 		"ry":"0",
 		"rz":"0",
@@ -38,8 +50,16 @@ io.on('connection', function(socket){
 	Cars.forEach(function(car){
 		if(car.driver == thisClientId)
 			return;
-
-		socket.emit('CarServerRefresh',car);
+		console.log(car);
+		var carA = {"id":Cars.indexOf(car),"driver":car.driver,"inUse":car.inUse,"x":car.x,"y":car.y,"z":car.z,"rx":car.rx,"ry":car.ry,"rz":car.rz};
+		socket.emit('CarServerRefresh',carA);
+	});
+	Ships.forEach(function(ship){
+		if(ship.driver == thisClientId)
+			return;
+		console.log(ship);
+		var shipA = {"id":Ships.indexOf(ship),"driver":ship.driver,"inUse":ship.inUse,"x":ship.x,"y":ship.y,"z":ship.z,"rx":ship.rx,"ry":ship.ry,"rz":ship.rz};
+		socket.emit('ShipServerRefresh',shipA);
 	});
 
 	socket.on('disconnect',function(){
@@ -47,6 +67,26 @@ io.on('connection', function(socket){
 		Players.splice(Players.indexOf(thisClientId), 1);
 
 		socket.broadcast.emit('disconnected', { id: thisClientId });
+
+		Cars.forEach(function(car){
+			if(car.driver == thisClientId){
+				console.log("car {0} is closed ({1}) for diconnect", Cars.indexOf(car), thisClientId);
+				car.inUse = "false";
+				var carA = {"id":Cars.indexOf(car),"driver":car.driver,"inUse":car.inUse,"x":car.x,"y":car.y,"z":car.z,"rx":car.rx,"ry":car.ry,"rz":car.rz};
+				socket.broadcast.emit('CarServerRefresh', carA);
+				return;
+			}
+		});
+
+		Ships.forEach(function(ship){
+			if(ship.driver == thisClientId){
+				console.log("ship {0} is closed ({1}) for diconnect", Ships.indexOf(ship), thisClientId);
+				ship.inUse = "false";
+				var shipA = {"id":Ships.indexOf(ship),"driver":ship.driver,"inUse":ship.inUse,"x":ship.x,"y":ship.y,"z":ship.z,"rx":ship.rx,"ry":ship.ry,"rz":ship.rz};
+				socket.broadcast.emit('CarServerRefresh', shipA);
+				return;
+			}
+		});
 	});
 
 	socket.on('PosRefresh',function(data){
@@ -61,24 +101,76 @@ io.on('connection', function(socket){
 	
 	socket.on('CarRefresh',function(data){
 		data.driver = thisClientId;
-		Cars.forEach(function(car){
-			if(car.id == data.id)
-				car = data;
-				return;
-		});
+		for(var i = 0; i < Cars.length; i++){
+			if(i == data.id){
+				var carA = {"driver":data.driver,"inUse":data.inUse,"x":data.x,"y":data.y,"z":data.z,"rx":data.rx,"ry":data.ry,"rz":data.rz};
+				Cars[i] = data;
+			}
+			
+		}
 		socket.broadcast.emit('CarServerRefresh', data);
+	});
+	socket.on('ShipRefresh',function(data){
+		data.driver = thisClientId;
+		for(var i = 0; i < Ships.length; i++){
+			if(i == data.id){
+				var ship = Ships[i];
+				var shipA = {"driver":ship.driver,"inUse":ship.inUse,"x":ship.x,"y":ship.y,"z":ship.z,"rx":ship.rx,"ry":ship.ry,"rz":ship.rz};
+				Ships[i] = shipA;
+			}
+			
+		}
+		socket.broadcast.emit('ShipServerRefresh', data);
 	});
 
 	socket.on('CloseCar',function(data){
 		data.driver = thisClientId;
 		Cars.forEach(function(car){
-			if(car.id == data.id){
-				console.log("car {0} is closed ({1})", data.id, car.id);
+			if(Cars.indexOf(car) == data.id){
 				car.inUse = "false";
-				socket.broadcast.emit('CarServerRefresh', car);
+				var carA = {"id":Cars.indexOf(car),"driver":car.driver,"inUse":car.inUse,"x":car.x,"y":car.y,"z":car.z,"rx":car.rx,"ry":car.ry,"rz":car.rz};
+				socket.broadcast.emit('CarServerRefresh', carA);
 				return;
 			}
 		});
 		
+	});
+
+
+	socket.on('CloseShip',function(data){
+		data.driver = thisClientId;
+		Ships.forEach(function(ship){
+			if(Ships.indexOf(ship) == data.id){
+				ship.inUse = "false";
+				var shipA = {"id":Ships.indexOf(ship),"driver":ship.driver,"inUse":ship.inUse,"x":ship.x,"y":ship.y,"z":ship.z,"rx":ship.rx,"ry":ship.ry,"rz":ship.rz};
+				socket.broadcast.emit('ShipServerRefresh', shipA);
+				return;
+			}
+		});
+		
+	});
+
+	socket.on('AddCar',function(data){
+		
+		Cars.push({"driver":"none","inUse":"false","x":String(data.x),"y":String(data.y),"z":String(data.z),"rx":"0","ry":"0","rz":"0"});
+		console.log(Cars[1] + "--");
+		Cars.forEach(function(car){
+			if(car.driver == thisClientId)
+				return;
+			console.log(car);
+			var carA = {"id":Cars.indexOf(car),"driver":car.driver,"inUse":car.inUse,"x":car.x,"y":car.y,"z":car.z,"rx":car.rx,"ry":car.ry,"rz":car.rz};
+			socket.emit('CarServerRefresh',carA);
+		});
+	});
+	socket.on('AddShip',function(data){
+		Ships.push({"driver":"none","inUse":"false","x":String(data.x),"y":String(data.y),"z":String(data.z),"rx":"0","ry":"0","rz":"0"});
+		console.log(Ships[Ships.length-1] + "--");
+		Ships.forEach(function(ship){
+			if(ship.driver == thisClientId)
+				return;
+			console.log(ship);
+			var shipA = {"id":Ships.indexOf(ship),"driver":ship.driver,"inUse":ship.inUse,"x":ship.x,"y":ship.y,"z":ship.z,"rx":ship.rx,"ry":ship.ry,"rz":ship.rz};
+			socket.emit('ShipServerRefresh',shipA);
+		});
 	});
 })
