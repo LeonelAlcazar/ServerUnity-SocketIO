@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "express": "*",
+    "mysql": "^2.16.0",
     "shortid": "*",
     "socket.io": "*"
   },
@@ -13,7 +14,7 @@
     "start": "node index.js",
     "test": "node index.js"
   },
-  "engines":{
+  "engines": {
     "node": "10.10.x"
   },
   "author": "Leonel Agustin Alcazar",
